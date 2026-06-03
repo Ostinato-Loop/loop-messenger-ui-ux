@@ -30,11 +30,13 @@ function CommunityPage() {
   const navigate = useNavigate();
   const [joined, setJoined] = useState(!!c.joined);
   const [showSheet, setShowSheet] = useState(false);
+  const [agreed, setAgreed] = useState(false);
   const [join, setJoin] = useState<JoinState>({ status: "idle" });
   const [tab, setTab] = useState<"feed" | "about" | "members">("feed");
 
   const openSheet = () => {
     setJoin({ status: "idle" });
+    setAgreed(false);
     setShowSheet(true);
   };
 
@@ -297,10 +299,23 @@ function CommunityPage() {
                   <SheetRow icon={<Users className="h-4 w-4" />} text={`Join ${c.members.toLocaleString()} members`} />
                 </ul>
 
+                <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-2xl border border-border/60 bg-surface-elevated/40 p-3">
+                  <input
+                    type="checkbox"
+                    checked={agreed}
+                    onChange={(e) => setAgreed(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 shrink-0 accent-[oklch(0.76_0.19_55)]"
+                  />
+                  <span className="text-xs leading-relaxed text-muted-foreground">
+                    I've read and agree to the <span className="font-medium text-foreground">community rules</span>{" "}
+                    and Loop's code of conduct.
+                  </span>
+                </label>
+
                 <button
                   onClick={confirmJoin}
-                  disabled={join.status === "loading"}
-                  className="mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-gradient-primary py-3 text-sm font-semibold text-primary-foreground shadow-glow disabled:opacity-70"
+                  disabled={join.status === "loading" || !agreed}
+                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-gradient-primary py-3 text-sm font-semibold text-primary-foreground shadow-glow disabled:opacity-50"
                 >
                   {join.status === "loading" ? (
                     <>
