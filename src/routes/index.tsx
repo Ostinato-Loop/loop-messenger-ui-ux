@@ -118,12 +118,13 @@ function ChatsPage() {
         ))}
       </ul>
 
-      <button
+      <Link
+        to="/compose"
         aria-label="New chat"
         className="fixed bottom-24 right-[max(1rem,calc(50%-240px+1rem))] z-30 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-primary text-primary-foreground shadow-glow transition-transform active:scale-95"
       >
         <Pencil className="h-5 w-5" />
-      </button>
+      </Link>
     </MobileShell>
   );
 }

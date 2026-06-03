@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Search, Plus, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { MobileShell } from "@/components/loop/MobileShell";
