@@ -24,20 +24,21 @@ function ChatThread() {
   }, [messages.length]);
 
   const deliver = (id: string) => {
-    // 18% simulated network failure for realism
-    const fail = Math.random() < 0.18;
+    const fail = Math.random() < 0.15;
     setTimeout(() => {
       setMessages((m) =>
-        m.map((msg) =>
-          msg.id === id ? { ...msg, status: fail ? "failed" : "sent" } : msg
-        )
+        m.map((msg) => (msg.id === id ? { ...msg, status: fail ? "failed" : "sent" } : msg))
       );
-      if (!fail) {
+      if (fail) return;
+      setTimeout(() => {
+        setMessages((m) => m.map((msg) => (msg.id === id ? { ...msg, status: "delivered" } : msg)));
         setTimeout(() => {
-          setMessages((m) => m.map((msg) => (msg.id === id ? { ...msg, read: true } : msg)));
-        }, 900);
-      }
-    }, 700);
+          setMessages((m) =>
+            m.map((msg) => (msg.id === id ? { ...msg, status: "read", read: true } : msg))
+          );
+        }, 1400);
+      }, 700);
+    }, 600);
   };
 
   const send = () => {
