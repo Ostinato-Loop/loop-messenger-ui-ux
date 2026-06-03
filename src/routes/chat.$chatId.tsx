@@ -93,14 +93,18 @@ function ChatThread() {
 
         {messages.map((m) => {
           const mine = m.from === "me";
+          const failed = m.status === "failed";
+          const sending = m.status === "sending";
           return (
-            <div key={m.id} className={cn("flex", mine ? "justify-end" : "justify-start")}>
+            <div key={m.id} className={cn("flex flex-col", mine ? "items-end" : "items-start")}>
               <div
                 className={cn(
-                  "relative max-w-[78%] rounded-2xl px-3 py-2 text-sm shadow-sm",
+                  "relative max-w-[78%] rounded-2xl px-3 py-2 text-sm shadow-sm transition-opacity",
                   mine
                     ? "bg-gradient-primary text-primary-foreground rounded-br-md"
-                    : "bg-surface text-foreground rounded-bl-md"
+                    : "bg-surface text-foreground rounded-bl-md",
+                  sending && "opacity-70",
+                  failed && "ring-1 ring-destructive/60"
                 )}
               >
                 {m.file ? (
@@ -118,7 +122,11 @@ function ChatThread() {
                 )}
                 <div className={cn("mt-0.5 flex items-center justify-end gap-1 text-[10px]", mine ? "text-primary-foreground/80" : "text-muted-foreground")}>
                   <span>{m.time}</span>
-                  {mine && (m.read ? <CheckCheck className="h-3 w-3" /> : <Check className="h-3 w-3" />)}
+                  {mine && (
+                    sending ? <Loader2 className="h-3 w-3 animate-spin" /> :
+                    failed ? <AlertCircle className="h-3 w-3 text-destructive" /> :
+                    m.read ? <CheckCheck className="h-3 w-3" /> : <Check className="h-3 w-3" />
+                  )}
                 </div>
                 {m.reaction && (
                   <span className="absolute -bottom-2 right-2 rounded-full bg-surface-elevated px-1.5 py-0.5 text-xs shadow-elevated">
@@ -126,6 +134,14 @@ function ChatThread() {
                   </span>
                 )}
               </div>
+              {failed && (
+                <button
+                  onClick={() => retry(m.id)}
+                  className="mr-1 mt-1 flex items-center gap-1 rounded-full bg-destructive/10 px-2 py-0.5 text-[10px] font-medium text-destructive hover:bg-destructive/20"
+                >
+                  <RotateCcw className="h-3 w-3" /> Not delivered · Retry
+                </button>
+              )}
             </div>
           );
         })}
