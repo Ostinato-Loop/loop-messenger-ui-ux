@@ -108,7 +108,7 @@ export type ChatMessage = {
   time: string;
   read?: boolean;
   reaction?: string;
-  status?: "sending" | "sent" | "failed";
+  status?: "sending" | "sent" | "delivered" | "read" | "failed";
 };
 
 export const sampleConversation: ChatMessage[] = [
