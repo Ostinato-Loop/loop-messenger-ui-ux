@@ -11,10 +11,14 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as DiscoverRouteImport } from './routes/discover'
+import { Route as ComposeRouteImport } from './routes/compose'
 import { Route as CommunitiesRouteImport } from './routes/communities'
 import { Route as CallsRouteImport } from './routes/calls'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CommunityIdRouteImport } from './routes/community.$id'
 import { Route as ChatChatIdRouteImport } from './routes/chat.$chatId'
+import { Route as CallCallIdRouteImport } from './routes/call.$callId'
 
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
@@ -24,6 +28,11 @@ const ProfileRoute = ProfileRouteImport.update({
 const DiscoverRoute = DiscoverRouteImport.update({
   id: '/discover',
   path: '/discover',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ComposeRoute = ComposeRouteImport.update({
+  id: '/compose',
+  path: '/compose',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CommunitiesRoute = CommunitiesRouteImport.update({
@@ -36,9 +45,19 @@ const CallsRoute = CallsRouteImport.update({
   path: '/calls',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CommunityIdRoute = CommunityIdRouteImport.update({
+  id: '/community/$id',
+  path: '/community/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChatChatIdRoute = ChatChatIdRouteImport.update({
@@ -46,66 +65,99 @@ const ChatChatIdRoute = ChatChatIdRouteImport.update({
   path: '/chat/$chatId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CallCallIdRoute = CallCallIdRouteImport.update({
+  id: '/call/$callId',
+  path: '/call/$callId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/calls': typeof CallsRoute
   '/communities': typeof CommunitiesRoute
+  '/compose': typeof ComposeRoute
   '/discover': typeof DiscoverRoute
   '/profile': typeof ProfileRoute
+  '/call/$callId': typeof CallCallIdRoute
   '/chat/$chatId': typeof ChatChatIdRoute
+  '/community/$id': typeof CommunityIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/calls': typeof CallsRoute
   '/communities': typeof CommunitiesRoute
+  '/compose': typeof ComposeRoute
   '/discover': typeof DiscoverRoute
   '/profile': typeof ProfileRoute
+  '/call/$callId': typeof CallCallIdRoute
   '/chat/$chatId': typeof ChatChatIdRoute
+  '/community/$id': typeof CommunityIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/calls': typeof CallsRoute
   '/communities': typeof CommunitiesRoute
+  '/compose': typeof ComposeRoute
   '/discover': typeof DiscoverRoute
   '/profile': typeof ProfileRoute
+  '/call/$callId': typeof CallCallIdRoute
   '/chat/$chatId': typeof ChatChatIdRoute
+  '/community/$id': typeof CommunityIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/auth'
     | '/calls'
     | '/communities'
+    | '/compose'
     | '/discover'
     | '/profile'
+    | '/call/$callId'
     | '/chat/$chatId'
+    | '/community/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/auth'
     | '/calls'
     | '/communities'
+    | '/compose'
     | '/discover'
     | '/profile'
+    | '/call/$callId'
     | '/chat/$chatId'
+    | '/community/$id'
   id:
     | '__root__'
     | '/'
+    | '/auth'
     | '/calls'
     | '/communities'
+    | '/compose'
     | '/discover'
     | '/profile'
+    | '/call/$callId'
     | '/chat/$chatId'
+    | '/community/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthRoute: typeof AuthRoute
   CallsRoute: typeof CallsRoute
   CommunitiesRoute: typeof CommunitiesRoute
+  ComposeRoute: typeof ComposeRoute
   DiscoverRoute: typeof DiscoverRoute
   ProfileRoute: typeof ProfileRoute
+  CallCallIdRoute: typeof CallCallIdRoute
   ChatChatIdRoute: typeof ChatChatIdRoute
+  CommunityIdRoute: typeof CommunityIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -124,6 +176,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DiscoverRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/compose': {
+      id: '/compose'
+      path: '/compose'
+      fullPath: '/compose'
+      preLoaderRoute: typeof ComposeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/communities': {
       id: '/communities'
       path: '/communities'
@@ -138,11 +197,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CallsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/community/$id': {
+      id: '/community/$id'
+      path: '/community/$id'
+      fullPath: '/community/$id'
+      preLoaderRoute: typeof CommunityIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/chat/$chatId': {
@@ -152,16 +225,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChatChatIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/call/$callId': {
+      id: '/call/$callId'
+      path: '/call/$callId'
+      fullPath: '/call/$callId'
+      preLoaderRoute: typeof CallCallIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthRoute: AuthRoute,
   CallsRoute: CallsRoute,
   CommunitiesRoute: CommunitiesRoute,
+  ComposeRoute: ComposeRoute,
   DiscoverRoute: DiscoverRoute,
   ProfileRoute: ProfileRoute,
+  CallCallIdRoute: CallCallIdRoute,
   ChatChatIdRoute: ChatChatIdRoute,
+  CommunityIdRoute: CommunityIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

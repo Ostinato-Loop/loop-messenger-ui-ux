@@ -1,9 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Settings, QrCode, Shield, Lock, Bell, Link2, Globe, ChevronRight, LogOut } from "lucide-react";
 import { MobileShell } from "@/components/loop/MobileShell";
 import { ScreenHeader } from "@/components/loop/ScreenHeader";
 import { LoopAvatar } from "@/components/loop/Avatar";
 import { VerifiedBadge } from "@/components/loop/VerifiedBadge";
+import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({ meta: [{ title: "Profile — Loop Messenger" }] }),
@@ -20,6 +21,17 @@ const ecosystem = [
 ];
 
 function ProfilePage() {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const handleSignOut = () => {
+    signOut();
+    navigate({ to: "/auth" });
+  };
+  const name = user?.name ?? "John Doe";
+  const handle = user?.handle ?? "@johndoe";
+  const avatar = user?.avatar ?? "https://i.pravatar.cc/150?u=johndoe";
+  const raldId = user?.raldId ?? "rald.cloud/johndoe";
+
   return (
     <MobileShell>
       <ScreenHeader
@@ -35,14 +47,14 @@ function ProfilePage() {
         <div className="relative overflow-hidden rounded-3xl border border-border/60 bg-gradient-to-br from-surface to-surface-elevated p-5 shadow-elevated">
           <div className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-primary/20 blur-3xl" />
           <div className="relative flex items-center gap-4">
-            <LoopAvatar src="https://i.pravatar.cc/150?u=johndoe" alt="John Doe" size={72} ring online />
+            <LoopAvatar src={avatar} alt={name} size={72} ring online />
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
-                <p className="truncate text-lg font-semibold">John Doe</p>
+                <p className="truncate text-lg font-semibold">{name}</p>
                 <VerifiedBadge />
               </div>
-              <p className="text-xs text-muted-foreground">@johndoe</p>
-              <p className="mt-1 text-[11px] text-primary">RALD ID · rald.cloud/johndoe</p>
+              <p className="text-xs text-muted-foreground">{handle}</p>
+              <p className="mt-1 text-[11px] text-primary">RALD ID · {raldId}</p>
             </div>
             <button
               aria-label="Show QR"

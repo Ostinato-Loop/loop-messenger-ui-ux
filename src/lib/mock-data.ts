@@ -118,3 +118,108 @@ export const sampleConversation: ChatMessage[] = [
   { id: "m5", from: "them", text: "Let me know if you need anything else.", time: "12:45" },
   { id: "m6", from: "me", text: "Will do. Thanks!", time: "12:45", read: true, reaction: "❤️" },
 ];
+
+export type FeedPost = {
+  id: string;
+  author: string;
+  handle: string;
+  avatar: string;
+  verified?: boolean;
+  community?: string;
+  time: string;
+  text: string;
+  likes: number;
+  comments: number;
+  reposts: number;
+  pinned?: boolean;
+};
+
+export const feed: FeedPost[] = [
+  {
+    id: "f1",
+    author: "RALD",
+    handle: "@rald",
+    avatar: av("rald"),
+    verified: true,
+    community: "RALD Announcements",
+    time: "2h",
+    text: "Loop Messenger is now live across the RALD ecosystem. One identity. Every conversation. Welcome home.",
+    likes: 1240,
+    comments: 312,
+    reposts: 488,
+    pinned: true,
+  },
+  {
+    id: "f2",
+    author: "Ama Boateng",
+    handle: "@ama",
+    avatar: av("ama"),
+    verified: true,
+    community: "Design Africa",
+    time: "4h",
+    text: "Spent the weekend redesigning the Loop avatar system. Small detail, huge identity unlock. Drop in the comments if you want the Figma file.",
+    likes: 412,
+    comments: 88,
+    reposts: 36,
+  },
+  {
+    id: "f3",
+    author: "Kwame Adjei",
+    handle: "@kwame",
+    avatar: av("kwame"),
+    community: "Loop Business Network",
+    time: "6h",
+    text: "Hiring 3 senior engineers in Accra. Remote OK across the continent. PayRALD payroll, full Loop comms stack. DM me.",
+    likes: 220,
+    comments: 41,
+    reposts: 19,
+  },
+  {
+    id: "f4",
+    author: "AfroDevs",
+    handle: "@afrodevs",
+    avatar: av("afrodevs"),
+    verified: true,
+    community: "AfroDevs Collective",
+    time: "9h",
+    text: "Live audio room tonight at 8PM GMT — \"Building edge-native apps for the next billion users\". Cloudflare engineers joining.",
+    likes: 89,
+    comments: 12,
+    reposts: 22,
+  },
+];
+
+export type CommunityPost = {
+  id: string;
+  author: string;
+  avatar: string;
+  time: string;
+  text: string;
+  likes: number;
+  comments: number;
+};
+
+export const communityPosts: CommunityPost[] = [
+  { id: "cp1", author: "Ama Boateng", avatar: av("ama"), time: "1h", text: "Just shared the new brand kit in #resources. Pull it for your next pitch deck.", likes: 84, comments: 12 },
+  { id: "cp2", author: "Tunde Bakare", avatar: av("tunde"), time: "3h", text: "Anyone going to the RALD Dev Conference in December? Looking for a roommate.", likes: 22, comments: 8 },
+  { id: "cp3", author: "Daniel O.", avatar: av("danielo"), time: "Yesterday", text: "We just shipped Loop Business API v2. Webhooks, presence, and per-thread metadata.", likes: 156, comments: 31 },
+];
+
+export type CallParticipant = {
+  id: string;
+  name: string;
+  avatar: string;
+  speaking?: boolean;
+  muted?: boolean;
+  video?: boolean;
+  host?: boolean;
+};
+
+export const activeCallParticipants: CallParticipant[] = [
+  { id: "u1", name: "Jane Smith", avatar: av("jane"), speaking: true, video: true, host: true },
+  { id: "u2", name: "Alex K.", avatar: av("alex"), video: true },
+  { id: "u3", name: "Sarah Lee", avatar: av("sarah"), muted: true },
+  { id: "u4", name: "Michael J.", avatar: av("michael") },
+  { id: "u5", name: "Kwame A.", avatar: av("kwame"), muted: true },
+  { id: "u6", name: "You", avatar: av("johndoe"), video: true },
+];

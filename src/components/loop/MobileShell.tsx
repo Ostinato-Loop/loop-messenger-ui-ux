@@ -1,7 +1,8 @@
-import { Link, useRouterState, type LinkProps } from "@tanstack/react-router";
+import { Link, Navigate, useRouterState, type LinkProps } from "@tanstack/react-router";
 import { MessageCircle, Users, Phone, Compass, User } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth";
 
 type Tab = {
   to: LinkProps["to"];
@@ -19,6 +20,11 @@ const tabs: Tab[] = [
 
 export function MobileShell({ children, hideNav }: { children: ReactNode; hideNav?: boolean }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { user, ready } = useAuth();
+
+  if (ready && !user) {
+    return <Navigate to="/auth" />;
+  }
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-[480px] flex-col bg-background">
