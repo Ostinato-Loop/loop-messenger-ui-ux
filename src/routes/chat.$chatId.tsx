@@ -1,12 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Phone, Video, MoreVertical, Plus, Smile, Mic, FileText, Check, CheckCheck } from "lucide-react";
-import { useState } from "react";
+import { ArrowLeft, Phone, Video, MoreVertical, Plus, Smile, Mic, Send, FileText, Check, CheckCheck } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { MobileShell } from "@/components/loop/MobileShell";
 import { LoopAvatar } from "@/components/loop/Avatar";
+import { RouteError } from "@/components/loop/RouteError";
 import { chats, sampleConversation, type ChatMessage } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/chat/$chatId")({
+  errorComponent: RouteError,
   component: ChatThread,
 });
 
@@ -15,15 +17,30 @@ function ChatThread() {
   const chat = chats.find((c) => c.id === chatId) ?? chats[0];
   const [messages, setMessages] = useState<ChatMessage[]>(sampleConversation);
   const [text, setText] = useState("");
+  const endRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [messages.length]);
 
   const send = () => {
-    if (!text.trim()) return;
-    setMessages((m) => [
-      ...m,
-      { id: String(Date.now()), from: "me", text, time: "now", read: false },
-    ]);
+    const value = text.trim();
+    if (!value) return;
+    const now = new Date();
+    const time = `${now.getHours().toString().padStart(2, "0")}:${now
+      .getMinutes()
+      .toString()
+      .padStart(2, "0")}`;
+    const id = `local-${now.getTime()}`;
+    setMessages((m) => [...m, { id, from: "me", text: value, time, read: false }]);
     setText("");
+    // Simulate delivered → read receipt
+    setTimeout(() => {
+      setMessages((m) => m.map((msg) => (msg.id === id ? { ...msg, read: true } : msg)));
+    }, 1200);
   };
+
+  const hasText = text.trim().length > 0;
 
   return (
     <MobileShell hideNav>
@@ -90,32 +107,45 @@ function ChatThread() {
             </div>
           );
         })}
+        <div ref={endRef} />
       </div>
 
       <div className="sticky bottom-0 z-30 border-t border-border/60 bg-background/95 px-2 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] backdrop-blur-xl">
-        <div className="flex items-end gap-2">
-          <button className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-primary text-primary-foreground shadow-glow">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            send();
+          }}
+          className="flex items-end gap-2"
+        >
+          <button
+            type="button"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface text-muted-foreground hover:text-foreground"
+          >
             <Plus className="h-5 w-5" />
           </button>
           <div className="flex flex-1 items-center gap-2 rounded-2xl bg-surface px-3 py-2">
             <input
               value={text}
               onChange={(e) => setText(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && send()}
               placeholder="Type a message…"
               className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
             />
-            <button className="text-muted-foreground hover:text-foreground">
+            <button type="button" className="text-muted-foreground hover:text-foreground">
               <Smile className="h-5 w-5" />
             </button>
           </div>
           <button
-            onClick={send}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-primary text-primary-foreground shadow-glow"
+            type="submit"
+            aria-label={hasText ? "Send message" : "Record voice message"}
+            className={cn(
+              "flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-primary-foreground shadow-glow transition-transform",
+              hasText ? "bg-gradient-primary scale-100" : "bg-gradient-primary/80"
+            )}
           >
-            <Mic className="h-5 w-5" />
+            {hasText ? <Send className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
           </button>
-        </div>
+        </form>
       </div>
     </MobileShell>
   );

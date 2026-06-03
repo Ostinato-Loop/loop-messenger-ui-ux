@@ -1,9 +1,10 @@
 import { createFileRoute, Link, useNavigate, notFound } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowLeft, Bell, Share2, Lock, Users, MessageCircle, Hash, Check, X } from "lucide-react";
+import { ArrowLeft, Bell, Share2, Lock, Users, MessageCircle, Hash, Check, X, Loader2, ShieldAlert, PartyPopper } from "lucide-react";
 import { MobileShell } from "@/components/loop/MobileShell";
 import { LoopAvatar } from "@/components/loop/Avatar";
 import { VerifiedBadge } from "@/components/loop/VerifiedBadge";
+import { RouteError } from "@/components/loop/RouteError";
 import { communities, communityPosts } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
@@ -14,18 +15,66 @@ export const Route = createFileRoute("/community/$id")({
     return c;
   },
   notFoundComponent: CommunityNotFound,
+  errorComponent: RouteError,
   component: CommunityPage,
 });
+
+type JoinState =
+  | { status: "idle" }
+  | { status: "loading" }
+  | { status: "error"; reason: "banned" | "already" | "network"; message: string }
+  | { status: "success" };
 
 function CommunityPage() {
   const c = Route.useLoaderData();
   const navigate = useNavigate();
   const [joined, setJoined] = useState(!!c.joined);
   const [showSheet, setShowSheet] = useState(false);
+  const [join, setJoin] = useState<JoinState>({ status: "idle" });
   const [tab, setTab] = useState<"feed" | "about" | "members">("feed");
 
-  const confirmJoin = () => {
+  const openSheet = () => {
+    setJoin({ status: "idle" });
+    setShowSheet(true);
+  };
+
+  const confirmJoin = async () => {
+    setJoin({ status: "loading" });
+    // Simulated network round-trip with deterministic mock failures
+    await new Promise((r) => setTimeout(r, 900));
+
+    if (c.id === "loop-biz") {
+      setJoin({
+        status: "error",
+        reason: "banned",
+        message: "You can't join Loop Business Network. Your account was restricted by an admin.",
+      });
+      return;
+    }
+    if (joined) {
+      setJoin({
+        status: "error",
+        reason: "already",
+        message: "You're already a member of this community.",
+      });
+      return;
+    }
+    // Tiny chance of a network blip for realism on a known id
+    if (c.id === "nairobi-runners" && Math.random() < 0.35) {
+      setJoin({
+        status: "error",
+        reason: "network",
+        message: "Network hiccup. Check your connection and try again.",
+      });
+      return;
+    }
+
     setJoined(true);
+    setJoin({ status: "success" });
+  };
+
+  const closeSheet = () => {
+    if (join.status === "loading") return;
     setShowSheet(false);
   };
 
@@ -62,7 +111,7 @@ function CommunityPage() {
 
         <div className="mt-4 flex gap-2">
           <button
-            onClick={() => (joined ? setJoined(false) : setShowSheet(true))}
+            onClick={() => (joined ? setJoined(false) : openSheet())}
             className={cn(
               "flex flex-1 items-center justify-center gap-1.5 rounded-full py-2.5 text-sm font-semibold transition-colors",
               joined
@@ -165,38 +214,111 @@ function CommunityPage() {
       </div>
 
       {showSheet && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm">
-          <div className="mx-auto w-full max-w-[480px] rounded-t-3xl border-t border-border bg-surface p-6 shadow-elevated animate-in slide-in-from-bottom duration-200">
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm"
+          onClick={closeSheet}
+        >
+          <div
+            className="mx-auto w-full max-w-[480px] rounded-t-3xl border-t border-border bg-surface p-6 shadow-elevated animate-in slide-in-from-bottom duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-border" />
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Join {c.name}</h2>
-              <button onClick={() => setShowSheet(false)} className="text-muted-foreground">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            <p className="mt-2 text-sm text-muted-foreground">
-              You'll receive notifications for highlights, mentions and town halls. Your RALD profile becomes
-              discoverable to members.
-            </p>
 
-            <ul className="mt-5 space-y-2.5 text-sm">
-              <SheetRow icon={<Bell className="h-4 w-4" />} text="Highlights only — quiet by default" />
-              <SheetRow icon={<Lock className="h-4 w-4" />} text="End-to-end encrypted direct messages" />
-              <SheetRow icon={<Users className="h-4 w-4" />} text={`Join ${c.members.toLocaleString()} members`} />
-            </ul>
+            {join.status === "success" ? (
+              <div className="py-2 text-center">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary/15 text-primary">
+                  <PartyPopper className="h-6 w-6" />
+                </div>
+                <h2 className="mt-3 text-lg font-semibold">You're in</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Welcome to {c.name}. Say hi in the feed and turn on highlights to stay in the loop.
+                </p>
+                <button
+                  onClick={() => setShowSheet(false)}
+                  className="mt-5 w-full rounded-full bg-gradient-primary py-3 text-sm font-semibold text-primary-foreground shadow-glow"
+                >
+                  Open community
+                </button>
+              </div>
+            ) : join.status === "error" ? (
+              <div className="py-2">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-destructive/15 text-destructive">
+                    <ShieldAlert className="h-5 w-5" />
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="text-base font-semibold">
+                      {join.reason === "banned"
+                        ? "You're restricted from this community"
+                        : join.reason === "already"
+                        ? "Already a member"
+                        : "Couldn't complete join"}
+                    </h2>
+                    <p className="mt-1 text-sm text-muted-foreground">{join.message}</p>
+                  </div>
+                </div>
+                <div className="mt-5 flex gap-2">
+                  {join.reason === "network" && (
+                    <button
+                      onClick={confirmJoin}
+                      className="flex-1 rounded-full bg-gradient-primary py-2.5 text-sm font-semibold text-primary-foreground shadow-glow"
+                    >
+                      Retry
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setShowSheet(false)}
+                    className="flex-1 rounded-full bg-surface-elevated py-2.5 text-sm font-semibold text-foreground"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-semibold">Join {c.name}</h2>
+                  <button
+                    onClick={closeSheet}
+                    disabled={join.status === "loading"}
+                    className="text-muted-foreground disabled:opacity-40"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  You'll receive notifications for highlights, mentions and town halls. Your RALD profile becomes
+                  discoverable to members.
+                </p>
 
-            <button
-              onClick={confirmJoin}
-              className="mt-6 w-full rounded-full bg-gradient-primary py-3 text-sm font-semibold text-primary-foreground shadow-glow"
-            >
-              Confirm & join
-            </button>
-            <button
-              onClick={() => setShowSheet(false)}
-              className="mt-2 w-full rounded-full py-2.5 text-xs font-medium text-muted-foreground"
-            >
-              Not now
-            </button>
+                <ul className="mt-5 space-y-2.5 text-sm">
+                  <SheetRow icon={<Bell className="h-4 w-4" />} text="Highlights only — quiet by default" />
+                  <SheetRow icon={<Lock className="h-4 w-4" />} text="End-to-end encrypted direct messages" />
+                  <SheetRow icon={<Users className="h-4 w-4" />} text={`Join ${c.members.toLocaleString()} members`} />
+                </ul>
+
+                <button
+                  onClick={confirmJoin}
+                  disabled={join.status === "loading"}
+                  className="mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-gradient-primary py-3 text-sm font-semibold text-primary-foreground shadow-glow disabled:opacity-70"
+                >
+                  {join.status === "loading" ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" /> Joining…
+                    </>
+                  ) : (
+                    "Confirm & join"
+                  )}
+                </button>
+                <button
+                  onClick={closeSheet}
+                  disabled={join.status === "loading"}
+                  className="mt-2 w-full rounded-full py-2.5 text-xs font-medium text-muted-foreground disabled:opacity-40"
+                >
+                  Not now
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}

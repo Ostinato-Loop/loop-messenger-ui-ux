@@ -6,9 +6,11 @@ import { LoopAvatar } from "@/components/loop/Avatar";
 import { VerifiedBadge } from "@/components/loop/VerifiedBadge";
 import { chats, suggestedPeople } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
+import { RouteError } from "@/components/loop/RouteError";
 
 export const Route = createFileRoute("/compose")({
   head: () => ({ meta: [{ title: "New message — Loop Messenger" }] }),
+  errorComponent: RouteError,
   component: ComposePage,
 });
 

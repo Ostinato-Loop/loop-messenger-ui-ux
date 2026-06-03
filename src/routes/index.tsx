@@ -8,6 +8,7 @@ import { LoopLogo } from "@/components/loop/LoopLogo";
 import { VerifiedBadge, BusinessBadge } from "@/components/loop/VerifiedBadge";
 import { chats } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
+import { RouteError } from "@/components/loop/RouteError";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -16,6 +17,7 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Loop Messenger — the communication hub of the RALD ecosystem." },
     ],
   }),
+  errorComponent: RouteError,
   component: ChatsPage,
 });
 

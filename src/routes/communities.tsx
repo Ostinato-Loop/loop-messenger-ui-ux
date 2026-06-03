@@ -7,9 +7,11 @@ import { LoopAvatar } from "@/components/loop/Avatar";
 import { VerifiedBadge } from "@/components/loop/VerifiedBadge";
 import { communities } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
+import { RouteError } from "@/components/loop/RouteError";
 
 export const Route = createFileRoute("/communities")({
   head: () => ({ meta: [{ title: "Communities — Loop Messenger" }] }),
+  errorComponent: RouteError,
   component: CommunitiesPage,
 });
 

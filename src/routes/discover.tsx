@@ -5,9 +5,11 @@ import { ScreenHeader } from "@/components/loop/ScreenHeader";
 import { LoopAvatar } from "@/components/loop/Avatar";
 import { VerifiedBadge } from "@/components/loop/VerifiedBadge";
 import { suggestedPeople, trending, events, communities, feed, audioRooms } from "@/lib/mock-data";
+import { RouteError } from "@/components/loop/RouteError";
 
 export const Route = createFileRoute("/discover")({
   head: () => ({ meta: [{ title: "Discover — Loop Messenger" }] }),
+  errorComponent: RouteError,
   component: DiscoverPage,
 });
 

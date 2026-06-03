@@ -3,9 +3,11 @@ import { useState } from "react";
 import { ArrowRight, ShieldCheck, KeyRound, Loader2, Globe } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { LoopLogo } from "@/components/loop/LoopLogo";
+import { RouteError } from "@/components/loop/RouteError";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Sign in with RALD — Loop Messenger" }] }),
+  errorComponent: RouteError,
   component: AuthPage,
 });
 
