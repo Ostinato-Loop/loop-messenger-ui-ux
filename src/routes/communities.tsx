@@ -82,22 +82,24 @@ function CommunitiesPage() {
                 key={c.id}
                 className="flex items-start gap-3 rounded-2xl border border-border/60 bg-surface p-3.5 shadow-elevated"
               >
-                <LoopAvatar src={c.avatar} alt={c.name} size={52} />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5">
-                    <p className="truncate text-sm font-semibold">{c.name}</p>
-                    {c.verified && <VerifiedBadge />}
+                <Link to="/community/$id" params={{ id: c.id }} className="flex min-w-0 flex-1 items-start gap-3">
+                  <LoopAvatar src={c.avatar} alt={c.name} size={52} />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <p className="truncate text-sm font-semibold">{c.name}</p>
+                      {c.verified && <VerifiedBadge />}
+                    </div>
+                    <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{c.description}</p>
+                    <div className="mt-2 flex items-center gap-3 text-[11px] text-muted-foreground">
+                      <span className="rounded-full bg-background px-2 py-0.5">{c.category}</span>
+                      <span>{c.members.toLocaleString()} members</span>
+                      <span className="flex items-center gap-1">
+                        <span className={cn("h-1.5 w-1.5 rounded-full", activityDot(c.activity))} />
+                        {c.activity}
+                      </span>
+                    </div>
                   </div>
-                  <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{c.description}</p>
-                  <div className="mt-2 flex items-center gap-3 text-[11px] text-muted-foreground">
-                    <span className="rounded-full bg-background px-2 py-0.5">{c.category}</span>
-                    <span>{c.members.toLocaleString()} members</span>
-                    <span className="flex items-center gap-1">
-                      <span className={cn("h-1.5 w-1.5 rounded-full", activityDot(c.activity))} />
-                      {c.activity}
-                    </span>
-                  </div>
-                </div>
+                </Link>
                 <button
                   className={cn(
                     "shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors",
