@@ -12,22 +12,32 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "../lib/auth";
+import { LoopLogo } from "../components/loop/LoopLogo";
 
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
+    <div className="flex min-h-screen items-center justify-center bg-background px-6">
+      <div className="mx-auto w-full max-w-sm text-center">
+        <div className="mx-auto mb-6 flex justify-center">
+          <LoopLogo />
+        </div>
+        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-primary">Error 404</p>
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">This loop doesn't exist</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
+          The page you're looking for has been moved, archived, or never existed in the Loop.
         </p>
-        <div className="mt-6">
+        <div className="mt-6 flex flex-col gap-2">
           <Link
             to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="inline-flex items-center justify-center rounded-full bg-gradient-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-glow"
           >
-            Go home
+            Back to Chats
+          </Link>
+          <Link
+            to="/discover"
+            className="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground"
+          >
+            Explore Discover
           </Link>
         </div>
       </div>
