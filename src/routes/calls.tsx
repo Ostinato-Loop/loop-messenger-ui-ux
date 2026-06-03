@@ -5,6 +5,7 @@ import { ScreenHeader } from "@/components/loop/ScreenHeader";
 import { LoopAvatar } from "@/components/loop/Avatar";
 import { calls, audioRooms } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
+import { RouteError } from "@/components/loop/RouteError";
 
 export const Route = createFileRoute("/calls")({
   head: () => ({ meta: [{ title: "Calls — Loop Messenger" }] }),

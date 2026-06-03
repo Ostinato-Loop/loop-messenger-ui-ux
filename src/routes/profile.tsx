@@ -5,6 +5,7 @@ import { ScreenHeader } from "@/components/loop/ScreenHeader";
 import { LoopAvatar } from "@/components/loop/Avatar";
 import { VerifiedBadge } from "@/components/loop/VerifiedBadge";
 import { useAuth } from "@/lib/auth";
+import { RouteError } from "@/components/loop/RouteError";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({ meta: [{ title: "Profile — Loop Messenger" }] }),

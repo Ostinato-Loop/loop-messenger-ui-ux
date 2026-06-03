@@ -6,6 +6,7 @@ import {
 import { LoopAvatar } from "@/components/loop/Avatar";
 import { activeCallParticipants } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
+import { RouteError } from "@/components/loop/RouteError";
 
 export const Route = createFileRoute("/call/$callId")({
   head: () => ({ meta: [{ title: "On call — Loop Messenger" }] }),
