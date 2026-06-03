@@ -24,20 +24,21 @@ function ChatThread() {
   }, [messages.length]);
 
   const deliver = (id: string) => {
-    // 18% simulated network failure for realism
-    const fail = Math.random() < 0.18;
+    const fail = Math.random() < 0.15;
     setTimeout(() => {
       setMessages((m) =>
-        m.map((msg) =>
-          msg.id === id ? { ...msg, status: fail ? "failed" : "sent" } : msg
-        )
+        m.map((msg) => (msg.id === id ? { ...msg, status: fail ? "failed" : "sent" } : msg))
       );
-      if (!fail) {
+      if (fail) return;
+      setTimeout(() => {
+        setMessages((m) => m.map((msg) => (msg.id === id ? { ...msg, status: "delivered" } : msg)));
         setTimeout(() => {
-          setMessages((m) => m.map((msg) => (msg.id === id ? { ...msg, read: true } : msg)));
-        }, 900);
-      }
-    }, 700);
+          setMessages((m) =>
+            m.map((msg) => (msg.id === id ? { ...msg, status: "read", read: true } : msg))
+          );
+        }, 1400);
+      }, 700);
+    }, 600);
   };
 
   const send = () => {
@@ -123,9 +124,17 @@ function ChatThread() {
                 <div className={cn("mt-0.5 flex items-center justify-end gap-1 text-[10px]", mine ? "text-primary-foreground/80" : "text-muted-foreground")}>
                   <span>{m.time}</span>
                   {mine && (
-                    sending ? <Loader2 className="h-3 w-3 animate-spin" /> :
-                    failed ? <AlertCircle className="h-3 w-3 text-destructive" /> :
-                    m.read ? <CheckCheck className="h-3 w-3" /> : <Check className="h-3 w-3" />
+                    sending ? (
+                      <Loader2 className="h-3 w-3 animate-spin" aria-label="Sending" />
+                    ) : failed ? (
+                      <AlertCircle className="h-3 w-3 text-destructive" aria-label="Failed to send" />
+                    ) : m.status === "read" || m.read ? (
+                      <CheckCheck className="h-3 w-3 text-sky-300" aria-label="Read" />
+                    ) : m.status === "delivered" ? (
+                      <CheckCheck className="h-3 w-3" aria-label="Delivered" />
+                    ) : (
+                      <Check className="h-3 w-3" aria-label="Sent" />
+                    )
                   )}
                 </div>
                 {m.reaction && (
