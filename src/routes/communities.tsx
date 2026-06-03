@@ -11,6 +11,7 @@ import { RouteError } from "@/components/loop/RouteError";
 
 export const Route = createFileRoute("/communities")({
   head: () => ({ meta: [{ title: "Communities — Loop Messenger" }] }),
+  errorComponent: RouteError,
   component: CommunitiesPage,
 });
 

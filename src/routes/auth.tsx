@@ -7,6 +7,7 @@ import { RouteError } from "@/components/loop/RouteError";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Sign in with RALD — Loop Messenger" }] }),
+  errorComponent: RouteError,
   component: AuthPage,
 });
 

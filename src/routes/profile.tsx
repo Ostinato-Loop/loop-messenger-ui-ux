@@ -9,6 +9,7 @@ import { RouteError } from "@/components/loop/RouteError";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({ meta: [{ title: "Profile — Loop Messenger" }] }),
+  errorComponent: RouteError,
   component: ProfilePage,
 });
 

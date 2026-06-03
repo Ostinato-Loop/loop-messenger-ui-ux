@@ -10,6 +10,7 @@ import { RouteError } from "@/components/loop/RouteError";
 
 export const Route = createFileRoute("/compose")({
   head: () => ({ meta: [{ title: "New message — Loop Messenger" }] }),
+  errorComponent: RouteError,
   component: ComposePage,
 });
 

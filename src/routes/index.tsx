@@ -17,6 +17,7 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Loop Messenger — the communication hub of the RALD ecosystem." },
     ],
   }),
+  errorComponent: RouteError,
   component: ChatsPage,
 });
 
