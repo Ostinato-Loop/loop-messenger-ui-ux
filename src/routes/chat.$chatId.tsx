@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Phone, Video, MoreVertical, Plus, Smile, Mic, Send, FileText, Check, CheckCheck } from "lucide-react";
+import { ArrowLeft, Phone, Video, MoreVertical, Plus, Smile, Mic, Send, FileText, Check, CheckCheck, Loader2, AlertCircle, RotateCcw } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { MobileShell } from "@/components/loop/MobileShell";
 import { LoopAvatar } from "@/components/loop/Avatar";
@@ -23,6 +23,23 @@ function ChatThread() {
     endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages.length]);
 
+  const deliver = (id: string) => {
+    // 18% simulated network failure for realism
+    const fail = Math.random() < 0.18;
+    setTimeout(() => {
+      setMessages((m) =>
+        m.map((msg) =>
+          msg.id === id ? { ...msg, status: fail ? "failed" : "sent" } : msg
+        )
+      );
+      if (!fail) {
+        setTimeout(() => {
+          setMessages((m) => m.map((msg) => (msg.id === id ? { ...msg, read: true } : msg)));
+        }, 900);
+      }
+    }, 700);
+  };
+
   const send = () => {
     const value = text.trim();
     if (!value) return;
@@ -32,12 +49,17 @@ function ChatThread() {
       .toString()
       .padStart(2, "0")}`;
     const id = `local-${now.getTime()}`;
-    setMessages((m) => [...m, { id, from: "me", text: value, time, read: false }]);
+    setMessages((m) => [
+      ...m,
+      { id, from: "me", text: value, time, read: false, status: "sending" },
+    ]);
     setText("");
-    // Simulate delivered → read receipt
-    setTimeout(() => {
-      setMessages((m) => m.map((msg) => (msg.id === id ? { ...msg, read: true } : msg)));
-    }, 1200);
+    deliver(id);
+  };
+
+  const retry = (id: string) => {
+    setMessages((m) => m.map((msg) => (msg.id === id ? { ...msg, status: "sending" } : msg)));
+    deliver(id);
   };
 
   const hasText = text.trim().length > 0;
