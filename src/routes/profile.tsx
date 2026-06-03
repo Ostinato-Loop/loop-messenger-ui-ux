@@ -1,9 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Settings, QrCode, Shield, Lock, Bell, Link2, Globe, ChevronRight, LogOut } from "lucide-react";
 import { MobileShell } from "@/components/loop/MobileShell";
 import { ScreenHeader } from "@/components/loop/ScreenHeader";
 import { LoopAvatar } from "@/components/loop/Avatar";
 import { VerifiedBadge } from "@/components/loop/VerifiedBadge";
+import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({ meta: [{ title: "Profile — Loop Messenger" }] }),

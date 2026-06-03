@@ -81,12 +81,14 @@ function CallsPage() {
                       <span>{c.time}</span>
                     </p>
                   </div>
-                  <button
+                  <Link
+                    to="/call/$callId"
+                    params={{ callId: c.id }}
                     aria-label={`Call ${c.name}`}
                     className="flex h-10 w-10 items-center justify-center rounded-full bg-surface text-primary hover:bg-primary/15"
                   >
                     {c.type === "video" ? <Video className="h-5 w-5" /> : <Phone className="h-5 w-5" />}
-                  </button>
+                  </Link>
                 </li>
               );
             })}
