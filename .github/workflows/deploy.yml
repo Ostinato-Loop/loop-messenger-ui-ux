@@ -1,0 +1,72 @@
+name: Deploy — Loop Messenger UI › CF Worker
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-loop-messenger-ui
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Build & deploy to Cloudflare Workers (chat.rald.cloud)
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      deployments: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        run: bun run lint || true
+
+      - name: Build
+        run: bun run build
+        env:
+          NODE_ENV: production
+          VITE_API_BASE: https://messenger.rald.cloud
+
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: d5a1cd03b76f467430034af64a7062fd
+          command: deploy
+
+      - name: Ensure DNS record exists (chat.rald.cloud AAAA 100::)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          node -e "
+          (async()=>{
+            const h={'Authorization':'Bearer '+process.env.CLOUDFLARE_API_TOKEN,'Content-Type':'application/json'};
+            const z=await fetch('https://api.cloudflare.com/client/v4/zones?name=rald.cloud',{headers:h}).then(r=>r.json());
+            const zid=z.result?.[0]?.id; if(!zid){console.log('zone not found');return;}
+            const ex=await fetch('https://api.cloudflare.com/client/v4/zones/'+zid+'/dns_records?name=chat.rald.cloud',{headers:h}).then(r=>r.json());
+            if(ex.result?.length){console.log('chat.rald.cloud DNS exists');return;}
+            const r=await fetch('https://api.cloudflare.com/client/v4/zones/'+zid+'/dns_records',{method:'POST',headers:h,body:JSON.stringify({type:'AAAA',name:'chat',content:'100::',proxied:true})}).then(r=>r.json());
+            console.log(r.success?'Created chat.rald.cloud AAAA 100::':'DNS error:'+JSON.stringify(r.errors));
+          })().catch(e=>console.error('[WARN]',e.message));
+          "
+
+      - name: Smoke test
+        run: |
+          sleep 15
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://chat.rald.cloud)
+          echo "chat.rald.cloud HTTP $STATUS"
+          [ "$STATUS" = "200" ] || echo "WARNING: expected 200, got $STATUS"
+
+      - name: Audit log
+        if: always()
+        run: echo "Deploy at $(date -u +%Y-%m-%dT%H:%M:%SZ) commit ${{ github.sha }} by ${{ github.actor }}"

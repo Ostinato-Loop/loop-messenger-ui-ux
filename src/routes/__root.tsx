@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useNavigate,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -11,7 +12,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { AuthProvider } from "../lib/auth";
+import { AuthProvider, useAuth } from "../lib/auth";
 import { LoopLogo } from "../components/loop/LoopLogo";
 
 function NotFoundComponent() {
@@ -88,21 +89,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "Loop Messenger — Your RALD world lives here" },
+      { name: "description", content: "Loop Messenger — the communication hub of the RALD ecosystem. One identity, every conversation." },
+      { name: "author", content: "LILCKY STUDIO LIMITED" },
+      { name: "theme-color", content: "#FF7A00" },
+      { property: "og:title", content: "Loop Messenger" },
+      { property: "og:description", content: "One identity. Every conversation. Built for Africa." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:site", content: "@raldcloud" },
     ],
-    links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
-    ],
+    links: [{ rel: "stylesheet", href: appCss }],
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -124,14 +121,33 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+/** Inner guard — runs inside AuthProvider so useAuth() is available */
+function AppGuard() {
+  const { ready, user } = useAuth();
+  const navigate = useNavigate();
+  const router = useRouter();
+  const pathname = router.latestLocation?.pathname ?? "/";
+
+  useEffect(() => {
+    if (!ready) return;
+    const onAuthPage = pathname === "/auth";
+    if (!user && !onAuthPage) {
+      navigate({ to: "/auth" });
+    } else if (user && onAuthPage) {
+      navigate({ to: "/" });
+    }
+  }, [ready, user, pathname, navigate]);
+
+  return <Outlet />;
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-        <Outlet />
+        <AppGuard />
       </AuthProvider>
     </QueryClientProvider>
   );

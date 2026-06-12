@@ -1,11 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Search, Pencil, Pin } from "lucide-react";
+import { Search, Pencil, Pin, MessageSquare } from "lucide-react";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { MobileShell } from "@/components/loop/MobileShell";
 import { ScreenHeader } from "@/components/loop/ScreenHeader";
 import { LoopAvatar } from "@/components/loop/Avatar";
 import { LoopLogo } from "@/components/loop/LoopLogo";
 import { VerifiedBadge, BusinessBadge } from "@/components/loop/VerifiedBadge";
+import { useAuth } from "@/lib/auth";
+import { api, type ApiConversation } from "@/lib/api";
 import { chats } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import { RouteError } from "@/components/loop/RouteError";
@@ -23,11 +26,50 @@ export const Route = createFileRoute("/")({
 
 const filters = ["All", "Unread", "Groups", "Channels"] as const;
 
+function formatTime(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const now = new Date();
+  const diff = (now.getTime() - d.getTime()) / 1000;
+  if (diff < 60) return "now";
+  if (diff < 3600 * 24) return `${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}`;
+  if (diff < 3600 * 48) return "Yesterday";
+  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  return days[d.getDay()];
+}
+
 function ChatsPage() {
+  const { user } = useAuth();
   const [filter, setFilter] = useState<(typeof filters)[number]>("All");
   const [query, setQuery] = useState("");
 
-  const filtered = chats.filter((c) => {
+  const { data, isLoading } = useQuery({
+    queryKey: ["conversations"],
+    queryFn: () => api.conversations.list(),
+    retry: 1,
+    staleTime: 30_000,
+  });
+
+  // Map real API conversations to display shape, fall back to mock if empty/failed
+  const apiChats = data?.conversations ?? [];
+  const displayChats = apiChats.length > 0
+    ? apiChats.map((c: ApiConversation) => ({
+        id: c.id,
+        name: c.name || (c.type === "direct" ? "Direct Message" : "Group"),
+        avatar: c.avatar ?? `https://i.pravatar.cc/150?u=${c.id}`,
+        lastMessage: c.lastMessage?.text ?? "",
+        time: formatTime(c.lastMessage?.createdAt),
+        unread: c.unreadCount > 0 ? c.unreadCount : undefined,
+        pinned: c.pinned,
+        verified: false,
+        business: false,
+        online: c.online,
+        typing: false,
+        group: c.type === "group",
+      }))
+    : (!isLoading && user ? [] : chats); // empty state when loaded; fallback only during initial load
+
+  const filtered = displayChats.filter((c) => {
     if (filter === "Unread" && !c.unread) return false;
     if (filter === "Groups" && !c.group) return false;
     if (filter === "Channels" && !c.verified) return false;
@@ -78,47 +120,59 @@ function ChatsPage() {
         </div>
       </div>
 
-      <ul className="mt-1 divide-y divide-border/40">
-        {filtered.map((c) => (
-          <li key={c.id}>
-            <Link
-              to="/chat/$chatId"
-              params={{ chatId: c.id }}
-              className="flex items-center gap-3 px-4 py-3 active:bg-surface/60"
-            >
-              <LoopAvatar src={c.avatar} alt={c.name} online={c.online} />
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5">
-                  <p className="truncate text-sm font-semibold">{c.name}</p>
-                  {c.verified && <VerifiedBadge />}
-                  {c.business && <BusinessBadge />}
-                  {c.pinned && <Pin className="ml-auto h-3.5 w-3.5 text-muted-foreground" />}
+      {isLoading ? (
+        <div className="flex flex-1 items-center justify-center py-16">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center px-8">
+          <MessageSquare className="mb-3 h-10 w-10 text-muted-foreground/40" />
+          <p className="text-sm font-medium text-muted-foreground">No conversations yet</p>
+          <p className="mt-1 text-xs text-muted-foreground/60">Start a new chat to connect with people in the RALD ecosystem.</p>
+        </div>
+      ) : (
+        <ul className="mt-1 divide-y divide-border/40">
+          {filtered.map((c) => (
+            <li key={c.id}>
+              <Link
+                to="/chat/$chatId"
+                params={{ chatId: c.id }}
+                className="flex items-center gap-3 px-4 py-3 active:bg-surface/60"
+              >
+                <LoopAvatar src={c.avatar} alt={c.name} online={c.online} />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <p className="truncate text-sm font-semibold">{c.name}</p>
+                    {c.verified && <VerifiedBadge />}
+                    {c.business && <BusinessBadge />}
+                    {c.pinned && <Pin className="ml-auto h-3.5 w-3.5 text-muted-foreground" />}
+                  </div>
+                  <p
+                    className={cn(
+                      "mt-0.5 truncate text-xs",
+                      c.typing ? "text-primary" : "text-muted-foreground"
+                    )}
+                  >
+                    {c.typing ? "typing…" : c.lastMessage}
+                  </p>
                 </div>
-                <p
-                  className={cn(
-                    "mt-0.5 truncate text-xs",
-                    c.typing ? "text-primary" : "text-muted-foreground"
-                  )}
-                >
-                  {c.typing ? "typing…" : c.lastMessage}
-                </p>
-              </div>
-              <div className="flex flex-col items-end gap-1">
-                <span className={cn("text-[11px]", c.unread ? "text-primary" : "text-muted-foreground")}>
-                  {c.time}
-                </span>
-                {c.unread ? (
-                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-gradient-primary px-1.5 text-[10px] font-bold text-primary-foreground shadow-glow">
-                    {c.unread}
+                <div className="flex flex-col items-end gap-1">
+                  <span className={cn("text-[11px]", c.unread ? "text-primary" : "text-muted-foreground")}>
+                    {c.time}
                   </span>
-                ) : (
-                  <span className="h-5" />
-                )}
-              </div>
-            </Link>
-          </li>
-        ))}
-      </ul>
+                  {c.unread ? (
+                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-gradient-primary px-1.5 text-[10px] font-bold text-primary-foreground shadow-glow">
+                      {c.unread}
+                    </span>
+                  ) : (
+                    <span className="h-5" />
+                  )}
+                </div>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
 
       <Link
         to="/compose"
