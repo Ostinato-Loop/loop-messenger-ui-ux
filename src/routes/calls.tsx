@@ -1,10 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { Phone, Video, PhoneIncoming, PhoneOutgoing, PhoneMissed, Radio, Users } from "lucide-react";
+import { createFileRoute } from "@tanstack/react-router";
+import { Video, Radio, Phone, PhoneOff } from "lucide-react";
 import { MobileShell } from "@/components/loop/MobileShell";
 import { ScreenHeader } from "@/components/loop/ScreenHeader";
-import { LoopAvatar } from "@/components/loop/Avatar";
-import { calls, audioRooms } from "@/lib/mock-data";
-import { cn } from "@/lib/utils";
 import { RouteError } from "@/components/loop/RouteError";
 
 export const Route = createFileRoute("/calls")({
@@ -26,76 +23,49 @@ function CallsPage() {
         }
       />
 
-      <div className="px-4 pt-4">
-        <section className="mb-5">
-          <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Live audio rooms</h2>
-          <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {audioRooms.map((r) => (
-              <div
-                key={r.id}
-                className="flex w-64 shrink-0 flex-col gap-3 rounded-2xl border border-border/60 bg-surface p-4 shadow-elevated"
-              >
-                <div className="flex items-center justify-between">
-                  <span
-                    className={cn(
-                      "flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
-                      r.live ? "bg-primary/15 text-primary" : "bg-surface-elevated text-muted-foreground"
-                    )}
-                  >
-                    <Radio className="h-3 w-3" /> {r.live ? "Live" : "Scheduled"}
-                  </span>
-                  <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                    <Users className="h-3 w-3" /> {r.listeners}
-                  </span>
-                </div>
-                <p className="text-sm font-semibold leading-snug">{r.title}</p>
-                <p className="text-[11px] text-muted-foreground">Hosted by {r.host}</p>
-                <button className="mt-1 rounded-full bg-gradient-primary py-1.5 text-xs font-semibold text-primary-foreground shadow-glow">
-                  {r.live ? "Join room" : "Remind me"}
-                </button>
-              </div>
-            ))}
+      <div className="px-4 pt-4 pb-8 space-y-6">
+        {/* Live audio rooms */}
+        <section>
+          <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Live audio rooms
+          </h2>
+          <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-border/60 bg-surface/50 px-4 py-6 text-center">
+            <Radio className="h-8 w-8 text-muted-foreground/30" />
+            <p className="text-sm font-medium text-muted-foreground">No live rooms right now</p>
+            <p className="text-xs text-muted-foreground/60">
+              Audio rooms will appear here when someone in your network goes live.
+            </p>
           </div>
         </section>
 
+        {/* Recent calls */}
         <section>
-          <h2 className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Recent</h2>
-          <ul className="divide-y divide-border/40">
-            {calls.map((c) => {
-              const Icon =
-                c.direction === "missed" ? PhoneMissed : c.direction === "incoming" ? PhoneIncoming : PhoneOutgoing;
-              return (
-                <li key={c.id} className="flex items-center gap-3 py-3">
-                  <LoopAvatar src={c.avatar} alt={c.name} />
-                  <div className="min-w-0 flex-1">
-                    <p
-                      className={cn(
-                        "truncate text-sm font-semibold",
-                        c.direction === "missed" && "text-destructive"
-                      )}
-                    >
-                      {c.name}
-                    </p>
-                    <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <Icon className="h-3.5 w-3.5" />
-                      <span className="capitalize">{c.direction}</span>
-                      <span>·</span>
-                      <span>{c.time}</span>
-                    </p>
-                  </div>
-                  <Link
-                    to="/call/$callId"
-                    params={{ callId: c.id }}
-                    aria-label={`Call ${c.name}`}
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-surface text-primary hover:bg-primary/15"
-                  >
-                    {c.type === "video" ? <Video className="h-5 w-5" /> : <Phone className="h-5 w-5" />}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
+          <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Recent
+          </h2>
+          <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-border/60 bg-surface/50 px-4 py-6 text-center">
+            <PhoneOff className="h-8 w-8 text-muted-foreground/30" />
+            <p className="text-sm font-medium text-muted-foreground">No recent calls</p>
+            <p className="text-xs text-muted-foreground/60">
+              Your call history will appear here.
+            </p>
+          </div>
         </section>
+
+        <div className="pt-2 flex justify-center gap-4">
+          <button className="flex flex-col items-center gap-1.5 rounded-2xl bg-surface px-6 py-4">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/15 text-primary">
+              <Phone className="h-6 w-6" />
+            </span>
+            <span className="text-xs font-medium">Voice call</span>
+          </button>
+          <button className="flex flex-col items-center gap-1.5 rounded-2xl bg-surface px-6 py-4">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/15 text-primary">
+              <Video className="h-6 w-6" />
+            </span>
+            <span className="text-xs font-medium">Video call</span>
+          </button>
+        </div>
       </div>
     </MobileShell>
   );

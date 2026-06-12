@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowLeft, Phone, Video, MoreVertical, Plus, Smile, Mic, Send,
-  FileText, Check, CheckCheck, Loader2, AlertCircle, RotateCcw,
+  FileText, Check, CheckCheck, Loader2, AlertCircle, RotateCcw, MessageSquare,
 } from "lucide-react";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -10,13 +10,25 @@ import { LoopAvatar } from "@/components/loop/Avatar";
 import { RouteError } from "@/components/loop/RouteError";
 import { useAuth } from "@/lib/auth";
 import { api, type ApiMessage } from "@/lib/api";
-import { sampleConversation, type ChatMessage } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/chat/$chatId")({
   errorComponent: RouteError,
   component: ChatThread,
 });
+
+/* ── Local types ──────────────────────────────────────────────────── */
+
+type ChatMessage = {
+  id: string;
+  text?: string;
+  file?: { name: string; size: string };
+  from: "me" | "them";
+  time: string;
+  read?: boolean;
+  reaction?: string;
+  status?: "sending" | "sent" | "delivered" | "read" | "failed";
+};
 
 /* ── Adapters ─────────────────────────────────────────────────────── */
 
@@ -35,8 +47,8 @@ function apiToLocal(msg: ApiMessage, myId: string): ChatMessage {
 
 /* ── Status icon ──────────────────────────────────────────────────── */
 
-function StatusIcon({ status }: { status?: ChatMessage["status"] }) {
-  if (status === "sending")   return <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />;
+function StatusIcon({ status }: { status: ChatMessage["status"] }) {
+  if (status === "sending")   return <Loader2 className="h-3 w-3 animate-spin text-primary-foreground/70" />;
   if (status === "failed")    return <AlertCircle className="h-3 w-3 text-destructive" />;
   if (status === "sent")      return <Check className="h-3 w-3 text-muted-foreground" />;
   if (status === "delivered") return <CheckCheck className="h-3 w-3 text-muted-foreground" />;
@@ -68,7 +80,7 @@ function ChatThread() {
     queryFn: () => api.messages.list(chatId),
     retry: 1,
     staleTime: 10_000,
-    refetchInterval: 5_000, // Poll for new messages every 5s
+    refetchInterval: 5_000,
   });
 
   const apiMessages: ChatMessage[] = (msgsData?.messages ?? []).map((m) =>
@@ -81,14 +93,12 @@ function ChatThread() {
     (m) => !sentIds.has(m.id) && m.status !== "failed"
   );
   const messages = [...apiMessages, ...pendingLocal];
-  const useMock = !isLoading && apiMessages.length === 0 && localMessages.length === 0;
-  const displayMessages = useMock ? sampleConversation : messages;
 
   /* Send mutation */
   const send = useMutation({
-    mutationFn: ({ id, value }: { id: string; value: string }) =>
+    mutationFn: ({ id: _id, value }: { id: string; value: string }) =>
       api.messages.send(chatId, value),
-    onSuccess: (newMsg, { id }) => {
+    onSuccess: (_newMsg, { id }) => {
       setLocalMessages((prev) => prev.filter((m) => m.id !== id));
       qc.invalidateQueries({ queryKey: ["messages", chatId] });
       qc.invalidateQueries({ queryKey: ["conversations"] });
@@ -120,12 +130,12 @@ function ChatThread() {
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [displayMessages.length]);
+  }, [messages.length]);
 
-  const convName = conv?.name ?? chatId;
+  const convName   = conv?.name ?? chatId;
   const convAvatar = conv?.avatar ?? `https://i.pravatar.cc/150?u=${chatId}`;
   const convOnline = conv?.online ?? false;
-  const hasText = text.trim().length > 0;
+  const hasText    = text.trim().length > 0;
 
   return (
     <MobileShell hideNav>
@@ -157,7 +167,14 @@ function ChatThread() {
             <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           </div>
         )}
-        {displayMessages.map((msg) => (
+        {!isLoading && messages.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-16 text-center px-8">
+            <MessageSquare className="mb-3 h-10 w-10 text-muted-foreground/30" />
+            <p className="text-sm font-medium text-muted-foreground">No messages yet</p>
+            <p className="mt-1 text-xs text-muted-foreground/60">Send the first message to start the conversation.</p>
+          </div>
+        )}
+        {messages.map((msg) => (
           <div key={msg.id} className={cn("flex gap-2", msg.from === "me" ? "flex-row-reverse" : "flex-row")}>
             <div
               className={cn(

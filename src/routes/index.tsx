@@ -9,7 +9,6 @@ import { LoopLogo } from "@/components/loop/LoopLogo";
 import { VerifiedBadge, BusinessBadge } from "@/components/loop/VerifiedBadge";
 import { useAuth } from "@/lib/auth";
 import { api, type ApiConversation } from "@/lib/api";
-import { chats } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import { RouteError } from "@/components/loop/RouteError";
 
@@ -32,7 +31,8 @@ function formatTime(iso: string | null | undefined): string {
   const now = new Date();
   const diff = (now.getTime() - d.getTime()) / 1000;
   if (diff < 60) return "now";
-  if (diff < 3600 * 24) return `${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}`;
+  if (diff < 3600 * 24)
+    return `${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}`;
   if (diff < 3600 * 48) return "Yesterday";
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   return days[d.getDay()];
@@ -50,24 +50,20 @@ function ChatsPage() {
     staleTime: 30_000,
   });
 
-  // Map real API conversations to display shape, fall back to mock if empty/failed
-  const apiChats = data?.conversations ?? [];
-  const displayChats = apiChats.length > 0
-    ? apiChats.map((c: ApiConversation) => ({
-        id: c.id,
-        name: c.name || (c.type === "direct" ? "Direct Message" : "Group"),
-        avatar: c.avatar ?? `https://i.pravatar.cc/150?u=${c.id}`,
-        lastMessage: c.lastMessage?.text ?? "",
-        time: formatTime(c.lastMessage?.createdAt),
-        unread: c.unreadCount > 0 ? c.unreadCount : undefined,
-        pinned: c.pinned,
-        verified: false,
-        business: false,
-        online: c.online,
-        typing: false,
-        group: c.type === "group",
-      }))
-    : (!isLoading && user ? [] : chats); // empty state when loaded; fallback only during initial load
+  const displayChats = (data?.conversations ?? []).map((c: ApiConversation) => ({
+    id: c.id,
+    name: c.name || (c.type === "direct" ? "Direct Message" : "Group"),
+    avatar: c.avatar ?? `https://i.pravatar.cc/150?u=${c.id}`,
+    lastMessage: c.lastMessage?.text ?? "",
+    time: formatTime(c.lastMessage?.createdAt),
+    unread: c.unreadCount > 0 ? c.unreadCount : undefined,
+    pinned: c.pinned,
+    verified: false,
+    business: false,
+    online: c.online,
+    typing: false,
+    group: c.type === "group",
+  }));
 
   const filtered = displayChats.filter((c) => {
     if (filter === "Unread" && !c.unread) return false;
@@ -124,11 +120,22 @@ function ChatsPage() {
         <div className="flex flex-1 items-center justify-center py-16">
           <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
         </div>
+      ) : !user ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center px-8">
+          <MessageSquare className="mb-3 h-10 w-10 text-muted-foreground/40" />
+          <p className="text-sm font-medium text-muted-foreground">Sign in to see your chats</p>
+        </div>
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center px-8">
           <MessageSquare className="mb-3 h-10 w-10 text-muted-foreground/40" />
-          <p className="text-sm font-medium text-muted-foreground">No conversations yet</p>
-          <p className="mt-1 text-xs text-muted-foreground/60">Start a new chat to connect with people in the RALD ecosystem.</p>
+          <p className="text-sm font-medium text-muted-foreground">
+            {query || filter !== "All" ? "No matching conversations" : "No conversations yet"}
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground/60">
+            {query || filter !== "All"
+              ? "Try a different search or filter."
+              : "Start a new chat to connect with people in the RALD ecosystem."}
+          </p>
         </div>
       ) : (
         <ul className="mt-1 divide-y divide-border/40">

@@ -14,25 +14,27 @@ export const Route = createFileRoute("/profile")({
 });
 
 const ecosystem = [
-  { name: "Loop", color: "from-orange-400 to-amber-500" },
-  { name: "PayRALD", color: "from-emerald-400 to-teal-500" },
-  { name: "GitRald", color: "from-violet-400 to-indigo-500" },
-  { name: "RALD Mail", color: "from-rose-400 to-pink-500" },
-  { name: "DunaRald", color: "from-sky-400 to-cyan-500" },
-  { name: "RALD AI", color: "from-fuchsia-400 to-purple-500" },
+  { name: "Loop",      color: "from-orange-400 to-amber-500"   },
+  { name: "PayRALD",   color: "from-emerald-400 to-teal-500"   },
+  { name: "GitRald",   color: "from-violet-400 to-indigo-500"  },
+  { name: "RALD Mail", color: "from-rose-400 to-pink-500"      },
+  { name: "DunaRald",  color: "from-sky-400 to-cyan-500"       },
+  { name: "RALD AI",   color: "from-fuchsia-400 to-purple-500" },
 ];
 
 function ProfilePage() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const handleSignOut = () => {
-    signOut();
+
+  const handleSignOut = async () => {
+    await signOut();
     navigate({ to: "/auth" });
   };
-  const name = user?.name ?? "John Doe";
-  const handle = user?.handle ?? "@johndoe";
-  const avatar = user?.avatar ?? "https://i.pravatar.cc/150?u=johndoe";
-  const raldId = user?.raldId ?? "rald.cloud/johndoe";
+
+  const name   = user?.name ?? "Loop User";
+  const handle = user?.handle ?? "";
+  const avatar = user?.avatar ?? null;
+  const raldId = user?.raldId ?? "";
 
   return (
     <MobileShell>
@@ -53,10 +55,10 @@ function ProfilePage() {
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
                 <p className="truncate text-lg font-semibold">{name}</p>
-                <VerifiedBadge />
+                {user?.verified && <VerifiedBadge />}
               </div>
-              <p className="text-xs text-muted-foreground">{handle}</p>
-              <p className="mt-1 text-[11px] text-primary">RALD ID · {raldId}</p>
+              {handle && <p className="text-xs text-muted-foreground">{handle}</p>}
+              {raldId && <p className="mt-1 text-[11px] text-primary">RALD ID · {raldId}</p>}
             </div>
             <button
               aria-label="Show QR"
@@ -67,9 +69,9 @@ function ProfilePage() {
           </div>
 
           <div className="relative mt-5 grid grid-cols-3 gap-2 text-center">
-            <Stat label="Communities" value="12" />
-            <Stat label="Connections" value="284" />
-            <Stat label="Following" value="1.2k" />
+            <Stat label="Communities" value="—" />
+            <Stat label="Connections" value="—" />
+            <Stat label="Following"   value="—" />
           </div>
         </div>
 
@@ -95,14 +97,17 @@ function ProfilePage() {
           <SectionTitle>Account</SectionTitle>
           <ul className="overflow-hidden rounded-2xl border border-border/60 bg-surface">
             <Row icon={<Shield className="h-4 w-4" />} label="Security" hint="2FA active" />
-            <Row icon={<Lock className="h-4 w-4" />} label="Privacy" hint="End-to-end encrypted" />
-            <Row icon={<Bell className="h-4 w-4" />} label="Notifications" />
-            <Row icon={<Globe className="h-4 w-4" />} label="Language & region" hint="English" />
-            <Row icon={<Link2 className="h-4 w-4" />} label="Third-party permissions" hint="3 apps" />
+            <Row icon={<Lock   className="h-4 w-4" />} label="Privacy"  hint="End-to-end encrypted" />
+            <Row icon={<Bell   className="h-4 w-4" />} label="Notifications" />
+            <Row icon={<Globe  className="h-4 w-4" />} label="Language & region" hint="English" />
+            <Row icon={<Link2  className="h-4 w-4" />} label="Third-party permissions" />
           </ul>
         </section>
 
-        <button className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-surface py-3 text-sm font-semibold text-destructive">
+        <button
+          onClick={handleSignOut}
+          className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-surface py-3 text-sm font-semibold text-destructive"
+        >
           <LogOut className="h-4 w-4" /> Sign out
         </button>
 
@@ -124,7 +129,9 @@ function Stat({ label, value }: { label: string; value: string }) {
 }
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
-  return <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{children}</h2>;
+  return (
+    <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{children}</h2>
+  );
 }
 
 function Row({ icon, label, hint }: { icon: React.ReactNode; label: string; hint?: string }) {
