@@ -1,10 +1,10 @@
 name            = "loop-messenger"
-main            = ".output/server/index.mjs"
+main            = "dist/server/index.mjs"
 compatibility_date = "2025-06-01"
 account_id      = "d5a1cd03b76f467430034af64a7062fd"
 
 [assets]
-directory = ".output/public"
+directory = "dist/client"
 binding   = "ASSETS"
 
 [vars]
@@ -17,6 +17,3 @@ zone_name = "rald.cloud"
 [observability]
 enabled           = true
 head_sampling_rate = 1
-
-# Secrets — set via wrangler secret put or Sync Worker Secrets workflow:
-# (none currently — all auth handled by messenger.rald.cloud CF Worker)
