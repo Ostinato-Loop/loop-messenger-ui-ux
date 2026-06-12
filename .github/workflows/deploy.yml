@@ -34,19 +34,6 @@ jobs:
           NODE_ENV: production
           VITE_API_BASE: https://messenger.rald.cloud
 
-      - name: Inspect build output
-        run: |
-          echo "=== dist/ root ==="
-          ls -la dist/ 2>/dev/null || echo "no dist/"
-          echo "=== dist/server/ ==="
-          ls -la dist/server/ 2>/dev/null || echo "no dist/server/"
-          echo "=== dist/client/ ==="
-          ls -la dist/client/ 2>/dev/null | head -10 || echo "no dist/client/"
-          echo "=== .output/ root ==="
-          ls -la .output/ 2>/dev/null || echo "no .output/"
-          echo "=== Find all index.mjs / _worker.js ==="
-          find . -name "index.mjs" -o -name "_worker.js" 2>/dev/null | grep -v node_modules | head -20
-
       - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3
         with:
@@ -64,9 +51,9 @@ jobs:
             const z=await fetch('https://api.cloudflare.com/client/v4/zones?name=rald.cloud',{headers:h}).then(r=>r.json());
             const zid=z.result?.[0]?.id; if(!zid){console.log('zone not found');return;}
             const ex=await fetch('https://api.cloudflare.com/client/v4/zones/'+zid+'/dns_records?name=chat.rald.cloud',{headers:h}).then(r=>r.json());
-            if(ex.result?.length){console.log('chat.rald.cloud DNS exists');return;}
+            if(ex.result?.length){console.log('chat.rald.cloud DNS already exists - skipping');return;}
             const r=await fetch('https://api.cloudflare.com/client/v4/zones/'+zid+'/dns_records',{method:'POST',headers:h,body:JSON.stringify({type:'AAAA',name:'chat',content:'100::',proxied:true})}).then(r=>r.json());
-            console.log(r.success?'Created chat.rald.cloud AAAA 100::':'DNS error:'+JSON.stringify(r.errors));
+            console.log(r.success?'Created chat.rald.cloud AAAA 100::':'DNS create error:'+JSON.stringify(r.errors));
           })().catch(e=>console.error('[WARN]',e.message));
           "
 

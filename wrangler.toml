@@ -1,5 +1,5 @@
 name            = "loop-messenger"
-main            = "dist/server/index.mjs"
+main            = "dist/server/server.js"
 compatibility_date = "2025-06-01"
 account_id      = "d5a1cd03b76f467430034af64a7062fd"
 
